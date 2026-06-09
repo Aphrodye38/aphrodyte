@@ -1,0 +1,2300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>aphrodyte3 — Creator Studio</title>
+<meta name="application-name" content="Aphrodyte3">
+<meta name="apple-mobile-web-app-title" content="Aphrodyte3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080808">
+<meta name="description" content="Creator Studio for @aphrodyte3 — Quote cards, motion effects & AI content tools">
+<link rel="manifest" href="/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+--black: #080808;
+--deep: #0f0f18;
+--card: #141420;
+--gold: #c9a84c;
+--gold2: #e8c97a;
+--purple: #7b4fd4;
+--purple2: #a67ee8;
+--cream: #f5f0e8;
+--white: #ffffff;
+--muted: rgba(255,255,255,0.38);
+--border: rgba(255,255,255,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+background: var(--black);
+color: var(--white);
+font-family: 'DM Sans', sans-serif;
+min-height: 100vh;
+overscroll-behavior: none;
+}
+body::before {
+content:'';
+position:fixed; inset:0;
+background:
+radial-gradient(ellipse at 10% 10%, rgba(123,79,212,0.13) 0%, transparent 55%),
+radial-gradient(ellipse at 90% 90%, rgba(201,168,76,0.07) 0%, transparent 55%);
+pointer-events:none; z-index:0;
+}
+/* ── NAV TABS ── */
+.nav {
+position: sticky; top:0; z-index:100;
+background: rgba(8,8,8,0.92);
+backdrop-filter: blur(16px);
+border-bottom: 1px solid var(--border);
+display: flex; align-items: center;
+padding: 0 16px;
+overflow-x: auto;
+scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display:none; }
+.nav-logo {
+font-family: 'Bebas Neue'; font-size:20px; letter-spacing:.2em;
+background: linear-gradient(135deg, var(--gold), var(--gold2));
+-webkit-background-clip:text; -webkit-text-fill-color:transparent;
+background-clip:text;
+padding: 14px 0; margin-right:auto;
+flex-shrink:0;
+}
+.tabs { display:flex; gap:2px; flex-shrink:0; }
+.tab {
+padding: 14px 12px;
+font-size: 11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase;
+color: var(--muted); cursor:pointer; border:none; background:none;
+border-bottom: 2px solid transparent;
+transition: all .2s; white-space:nowrap;
+}
+.tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+/* ── SCREENS ── */
+.screen { display:none; padding:20px 16px 100px; position:relative; z-index:1; }
+.screen.active { display:block; }
+/* ── SECTION LABEL ── */
+.sec-label {
+font-family:'Bebas Neue'; font-size:11px; letter-spacing:.25em;
+color:var(--gold); margin-bottom:12px; text-transform:uppercase;
+}
+/* ── CARD / PANEL ── */
+.panel {
+background: var(--card);
+border: 1px solid var(--border);
+border-radius: 16px;
+padding: 20px;
+margin-bottom: 16px;
+}
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+border: 1.5px dashed rgba(201,168,76,0.35);
+border-radius: 14px;
+padding: 36px 20px;
+text-align: center;
+cursor: pointer;
+transition: all .2s;
+background: rgba(201,168,76,0.03);
+position: relative;
+}
+.upload-zone:hover, .upload-zone.drag { border-color:var(--gold); background:rgba(201,168,76,0.07); }
+.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.upload-icon { font-size:36px; margin-bottom:10px; }
+.upload-text { color:var(--muted); font-size:13px; line-height:1.5; }
+.upload-text strong { color:var(--gold); }
+/* ── PHOTO GRID ── */
+.photo-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+margin-top: 12px;
+}
+.photo-thumb {
+aspect-ratio: 1;
+border-radius: 10px;
+overflow: hidden;
+cursor: pointer;
+border: 2px solid transparent;
+position: relative;
+transition: all .2s;
+}
+.photo-thumb img { width:100%; height:100%; object-fit:cover; }
+.photo-thumb.selected { border-color: var(--gold); }
+.photo-thumb .del-btn {
+position:absolute; top:4px; right:4px;
+width:20px; height:20px; border-radius:50%;
+background:rgba(0,0,0,0.7); color:#fff;
+font-size:11px; display:flex; align-items:center; justify-content:center;
+cursor:pointer; z-index:2;
+}
+/* ── PREVIEW CANVAS ── */
+#previewWrap {
+width:100%; aspect-ratio:9/16;
+border-radius:16px; overflow:hidden;
+position:relative; background:#000;
+margin-bottom:12px;
+}
+#previewWrap canvas, #previewWrap video {
+width:100%; height:100%; display:block; object-fit:cover;
+}
+#liveCanvas {
+position:absolute; inset:0;
+width:100%; height:100%;
+pointer-events:none;
+}
+/* ── FORM CONTROLS ── */
+label.ctrl-label {
+display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+color:var(--muted); margin-bottom:7px; margin-top:16px;
+}
+label.ctrl-label:first-child { margin-top:0; }
+textarea, input[type=text], input[type=range], select {
+width:100%; background:rgba(255,255,255,0.04);
+border:1px solid var(--border); border-radius:10px;
+padding:11px 14px; color:var(--white);
+font-family:'DM Sans',sans-serif; font-size:14px;
+outline:none; transition:border-color .2s;
+}
+textarea { min-height:80px; resize:vertical; }
+textarea:focus, input[type=text]:focus, select:focus { border-color:var(--purple); }
+input[type=range] {
+padding:6px 0; border:none; background:none;
+accent-color:var(--gold);
+}
+select { font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; }
+select option { background:#1a1a2e; }
+/* ── CHIP GRID ── */
+.chip-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
+.chip {
+padding:7px 13px; border-radius:20px;
+border:1px solid var(--border);
+background:rgba(255,255,255,0.03);
+font-size:12px; color:var(--muted);
+cursor:pointer; transition:all .2s;
+}
+.chip:hover, .chip.active {
+border-color:var(--gold); color:var(--gold);
+background:rgba(201,168,76,0.1);
+}
+/* ── QUOTE PRESETS ── */
+.quote-list {
+max-height:220px; overflow-y:auto;
+scrollbar-width:thin; scrollbar-color:var(--purple) transparent;
+display:flex; flex-direction:column; gap:6px;
+}
+.q-btn {
+background:rgba(255,255,255,0.03); border:1px solid var(--border);
+border-radius:8px; padding:9px 12px;
+color:rgba(255,255,255,0.65); font-family:'DM Sans',sans-serif;
+font-size:12px; text-align:left; cursor:pointer; transition:all .2s;
+line-height:1.4;
+}
+.q-btn:hover, .q-btn.active {
+background:rgba(123,79,212,0.18); border-color:var(--purple); color:#fff;
+}
+/* ── COLOR SWATCH ── */
+.swatch-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+.swatch {
+width:32px; height:32px; border-radius:50%;
+cursor:pointer; border:2px solid transparent;
+transition:transform .15s;
+}
+.swatch.active { border-color:#fff; transform:scale(1.15); }
+/* ── BUTTONS ── */
+.btn-row { display:flex; gap:10px; margin-top:16px; }
+.btn {
+flex:1; padding:13px 8px; border-radius:10px;
+border:none; cursor:pointer;
+font-family:'Bebas Neue'; font-size:15px; letter-spacing:.15em;
+transition:all .2s; text-align:center;
+}
+.btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; }
+.btn-purple { background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+.btn:hover { transform:translateY(-1px); filter:brightness(1.08); }
+.btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; filter:none; }
+/* ── FX GRID ── */
+.fx-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.fx-card {
+background:rgba(255,255,255,0.03);
+border:1px solid var(--border);
+border-radius:12px; padding:14px;
+cursor:pointer; transition:all .2s;
+text-align:center;
+}
+.fx-card:hover, .fx-card.active {
+border-color:var(--purple); background:rgba(123,79,212,0.15);
+}
+.fx-card .fx-icon { font-size:24px; margin-bottom:6px; }
+.fx-card .fx-name { font-size:12px; font-weight:500; color:var(--muted); }
+.fx-card.active .fx-name { color:var(--purple2); }
+/* ── MOTION CANVAS ── */
+#motionPreview {
+width:100%; aspect-ratio:9/16;
+border-radius:16px; overflow:hidden;
+background:#000; position:relative;
+margin-bottom:12px;
+}
+#motionCanvas { width:100%; height:100%; display:block; }
+/* ── EXPORT OVERLAY ── */
+#exportOverlay {
+display:none; position:fixed; inset:0;
+background:rgba(0,0,0,0.85); z-index:200;
+align-items:center; justify-content:center;
+flex-direction:column; gap:16px;
+}
+#exportOverlay.show { display:flex; }
+.export-box {
+background:var(--card); border:1px solid var(--border);
+border-radius:20px; padding:32px 24px;
+text-align:center; max-width:300px; width:90%;
+}
+.export-title { font-family:'Bebas Neue'; font-size:24px; letter-spacing:.15em; color:var(--gold); margin-bottom:8px; }
+.export-sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+.progress-bar {
+width:100%; height:4px; background:rgba(255,255,255,0.1);
+border-radius:2px; overflow:hidden; margin-bottom:20px;
+}
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--purple),var(--gold)); border-radius:2px; transition:width .3s; }
+/* ── TOAST ── */
+#toast {
+position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+background:var(--card); border:1px solid var(--gold);
+border-radius:10px; padding:10px 20px;
+font-size:13px; color:var(--gold);
+opacity:0; transition:all .3s; z-index:300;
+white-space:nowrap;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+/* ── POSITION CONTROL ── */
+.pos-grid {
+display:grid; grid-template-columns:repeat(3,1fr);
+gap:6px; margin-top:4px;
+}
+.pos-btn {
+padding:10px; border-radius:8px;
+border:1px solid var(--border); background:rgba(255,255,255,0.03);
+color:var(--muted); font-size:18px; cursor:pointer; transition:all .2s;
+text-align:center;
+}
+.pos-btn:hover, .pos-btn.active {
+border-color:var(--gold); background:rgba(201,168,76,0.1);
+}
+/* ══════════════════════════════
+AI CONTENT PA — SPECIFIC STYLES
+══════════════════════════════ */
+/* Prompt tool cards */
+.prompt-tool-grid {
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+.prompt-tool-card {
+background: rgba(255,255,255,0.03);
+border: 1px solid var(--border);
+border-radius: 14px;
+overflow: hidden;
+transition: border-color .2s;
+}
+.prompt-tool-card.open {
+border-color: rgba(123,79,212,0.5);
+}
+.ptc-header {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 14px 16px;
+cursor: pointer;
+user-select: none;
+}
+.ptc-icon {
+font-size: 22px;
+flex-shrink: 0;
+width: 36px;
+height: 36px;
+background: rgba(123,79,212,0.15);
+border-radius: 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.ptc-info { flex: 1; min-width: 0; }
+.ptc-title {
+font-size: 13px;
+font-weight: 600;
+color: var(--white);
+margin-bottom: 2px;
+}
+.ptc-desc {
+font-size: 11px;
+color: var(--muted);
+line-height: 1.4;
+}
+.ptc-arrow {
+font-size: 12px;
+color: var(--muted);
+transition: transform .2s;
+flex-shrink: 0;
+}
+.prompt-tool-card.open .ptc-arrow { transform: rotate(90deg); }
+.ptc-body {
+display: none;
+padding: 0 16px 16px;
+border-top: 1px solid var(--border);
+}
+.prompt-tool-card.open .ptc-body { display: block; }
+.ptc-body label.ctrl-label { margin-top: 14px; }
+.ptc-body label.ctrl-label:first-child { margin-top: 14px; }
+/* Niche/topic context bar */
+.context-bar {
+background: rgba(201,168,76,0.06);
+border: 1px solid rgba(201,168,76,0.2);
+border-radius: 12px;
+padding: 14px 16px;
+margin-bottom: 16px;
+}
+.context-bar-title {
+font-size: 11px;
+letter-spacing: .12em;
+text-transform: uppercase;
+color: var(--gold);
+margin-bottom: 8px;
+font-weight: 600;
+}
+.context-niche-chips {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+}
+.niche-chip {
+padding: 5px 11px;
+border-radius: 16px;
+border: 1px solid rgba(201,168,76,0.3);
+font-size: 11px;
+color: var(--gold);
+cursor: pointer;
+transition: all .2s;
+background: transparent;
+}
+.niche-chip.active {
+background: rgba(201,168,76,0.18);
+border-color: var(--gold);
+}
+/* AI output area */
+.ai-output-wrap {
+margin-top: 12px;
+min-height: 0;
+}
+.ai-output {
+background: rgba(0,0,0,0.35);
+border: 1px solid rgba(123,79,212,0.25);
+border-radius: 10px;
+padding: 14px;
+font-size: 13px;
+line-height: 1.75;
+color: rgba(255,255,255,0.85);
+white-space: pre-wrap;
+word-break: break-word;
+max-height: 400px;
+overflow-y: auto;
+scrollbar-width: thin;
+scrollbar-color: var(--purple) transparent;
+display: none;
+}
+.ai-output.visible { display: block; }
+.ai-output-actions {
+display: flex;
+gap: 8px;
+margin-top: 10px;
+}
+.ai-generating {
+display: none;
+align-items: center;
+gap: 10px;
+padding: 12px 14px;
+background: rgba(123,79,212,0.1);
+border: 1px solid rgba(123,79,212,0.2);
+border-radius: 10px;
+margin-top: 12px;
+font-size: 12px;
+color: var(--purple2);
+}
+.ai-generating.visible { display: flex; }
+.gen-dots {
+display: flex;
+gap: 4px;
+}
+.gen-dot {
+width: 5px; height: 5px;
+border-radius: 50%;
+background: var(--purple2);
+animation: dotpulse 1.2s ease-in-out infinite;
+}
+.gen-dot:nth-child(2) { animation-delay: .2s; }
+.gen-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes dotpulse {
+0%, 80%, 100% { opacity: .3; transform: scale(0.8); }
+40% { opacity: 1; transform: scale(1); }
+}
+/* Run button mini */
+.btn-run {
+width: 100%;
+padding: 11px;
+border-radius: 10px;
+border: none;
+background: linear-gradient(135deg, var(--purple), var(--purple2));
+color: #fff;
+font-family: 'Bebas Neue';
+font-size: 14px;
+letter-spacing: .15em;
+cursor: pointer;
+margin-top: 12px;
+transition: all .2s;
+}
+.btn-run:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+.btn-copy-sm {
+flex: 1;
+padding: 9px;
+border-radius: 8px;
+border: 1px solid var(--border);
+background: transparent;
+color: var(--muted);
+font-size: 12px;
+cursor: pointer;
+transition: all .2s;
+}
+.btn-copy-sm:hover {
+border-color: var(--gold);
+color: var(--gold);
+}
+.btn-use-sm {
+flex: 1;
+padding: 9px;
+border-radius: 8px;
+border: none;
+background: rgba(201,168,76,0.15);
+color: var(--gold);
+font-size: 12px;
+cursor: pointer;
+transition: all .2s;
+}
+.btn-use-sm:hover { background: rgba(201,168,76,0.25); }
+/* ── SETUP OVERLAY ── */
+#setupOverlay {
+display: none;
+position: fixed; inset: 0; z-index: 500;
+background: rgba(8,8,8,0.97);
+backdrop-filter: blur(20px);
+overflow-y: auto;
+padding: 32px 20px 60px;
+}
+#setupOverlay.show { display: block; }
+.setup-wrap {
+max-width: 380px;
+margin: 0 auto;
+}
+.setup-logo {
+font-family: 'Bebas Neue';
+font-size: 22px;
+letter-spacing: .25em;
+background: linear-gradient(135deg, var(--gold), var(--gold2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+text-align: center;
+margin-bottom: 6px;
+}
+.setup-title {
+font-family: 'Bebas Neue';
+font-size: 32px;
+letter-spacing: .15em;
+background: linear-gradient(135deg, var(--white), var(--purple2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+text-align: center;
+line-height: 1.1;
+margin-bottom: 8px;
+}
+.setup-sub {
+text-align: center;
+color: var(--muted);
+font-size: 13px;
+line-height: 1.6;
+margin-bottom: 32px;
+}
+.setup-steps {
+display: flex;
+flex-direction: column;
+gap: 16px;
+margin-bottom: 28px;
+}
+.setup-step {
+display: flex;
+gap: 14px;
+align-items: flex-start;
+}
+.step-num {
+width: 32px; height: 32px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--purple), var(--purple2));
+color: #fff;
+font-family: 'Bebas Neue';
+font-size: 16px;
+letter-spacing: .1em;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+margin-top: 1px;
+}
+.step-body {}
+.step-title {
+font-size: 14px;
+font-weight: 600;
+color: var(--white);
+margin-bottom: 4px;
+}
+.step-desc {
+font-size: 12px;
+color: var(--muted);
+line-height: 1.6;
+}
+.step-desc a {
+color: var(--gold);
+text-decoration: none;
+font-weight: 600;
+}
+.step-desc code {
+background: rgba(255,255,255,0.08);
+padding: 1px 6px;
+border-radius: 4px;
+font-family: monospace;
+font-size: 11px;
+color: var(--gold2);
+}
+.setup-divider {
+border: none;
+border-top: 1px solid var(--border);
+margin: 24px 0;
+}
+.setup-key-section {}
+.setup-key-label {
+font-size: 11px;
+letter-spacing: .12em;
+text-transform: uppercase;
+color: var(--gold);
+font-weight: 600;
+margin-bottom: 10px;
+}
+.setup-input-row {
+display: flex;
+gap: 8px;
+margin-bottom: 10px;
+}
+.setup-input-row input {
+flex: 1;
+font-size: 13px;
+padding: 11px 13px;
+font-family: 'DM Sans', sans-serif;
+}
+.btn-setup-save {
+width: 100%;
+padding: 14px;
+border-radius: 12px;
+border: none;
+background: linear-gradient(135deg, var(--purple), var(--purple2));
+color: #fff;
+font-family: 'Bebas Neue';
+font-size: 17px;
+letter-spacing: .2em;
+cursor: pointer;
+transition: all .2s;
+margin-top: 4px;
+}
+.btn-setup-save:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-setup-skip {
+width: 100%;
+padding: 12px;
+border-radius: 12px;
+border: 1px solid var(--border);
+background: transparent;
+color: var(--muted);
+font-size: 13px;
+cursor: pointer;
+margin-top: 10px;
+transition: all .2s;
+}
+.btn-setup-skip:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+.setup-note {
+text-align: center;
+font-size: 11px;
+color: rgba(255,255,255,0.2);
+margin-top: 14px;
+line-height: 1.5;
+}
+/* cost badge */
+.cost-badge {
+display: inline-flex;
+align-items: center;
+gap: 5px;
+background: rgba(74,222,128,0.1);
+border: 1px solid rgba(74,222,128,0.25);
+border-radius: 20px;
+padding: 4px 10px;
+font-size: 11px;
+color: #4ade80;
+margin-top: 8px;
+}
+/* API key panel */
+.api-key-panel {
+background: rgba(255,255,255,0.03);
+border: 1px solid var(--border);
+border-radius: 14px;
+padding: 16px;
+margin-bottom: 14px;
+transition: border-color .2s;
+}
+.api-key-panel.unlocked {
+border-color: rgba(123,79,212,0.4);
+background: rgba(123,79,212,0.06);
+}
+.api-key-header {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 12px;
+}
+.api-key-status {
+width: 8px; height: 8px; border-radius: 50%;
+background: rgba(255,255,255,0.2);
+flex-shrink: 0;
+transition: background .3s;
+}
+.api-key-status.on { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+.api-key-label {
+font-size: 12px; font-weight: 600; color: var(--white); flex: 1;
+}
+.api-key-sublabel {
+font-size: 11px; color: var(--muted); margin-top: 1px;
+}
+.api-key-input-row {
+display: flex; gap: 8px; align-items: center;
+}
+.api-key-input-row input {
+flex: 1; font-family: 'DM Sans', sans-serif;
+font-size: 13px; padding: 9px 12px;
+letter-spacing: .05em;
+}
+.btn-eye {
+width: 38px; height: 38px; border-radius: 8px;
+border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+color: var(--muted); font-size: 16px; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0; transition: all .2s;
+}
+.btn-eye:hover { border-color: var(--gold); color: var(--gold); }
+.btn-save-key {
+padding: 9px 16px; border-radius: 8px;
+border: none; background: linear-gradient(135deg, var(--purple), var(--purple2));
+color: #fff; font-size: 12px; font-weight: 600;
+cursor: pointer; flex-shrink: 0; transition: all .2s;
+white-space: nowrap;
+}
+.btn-save-key:hover { filter: brightness(1.1); }
+.api-key-hint {
+margin-top: 9px; font-size: 11px; color: var(--muted); line-height: 1.5;
+}
+.api-key-hint a { color: var(--gold); text-decoration: none; }
+/* PA intro header */
+.pa-hero {
+background: linear-gradient(135deg, rgba(123,79,212,0.15), rgba(201,168,76,0.08));
+border: 1px solid rgba(123,79,212,0.25);
+border-radius: 16px;
+padding: 20px;
+margin-bottom: 16px;
+text-align: center;
+}
+.pa-hero-title {
+font-family: 'Bebas Neue';
+font-size: 26px;
+letter-spacing: .2em;
+background: linear-gradient(135deg, var(--gold), var(--purple2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+margin-bottom: 6px;
+}
+.pa-hero-sub {
+font-size: 12px;
+color: var(--muted);
+line-height: 1.5;
+}
+/* Textarea inside ptc-body */
+.ptc-body textarea,
+.ptc-body input[type=text] {
+font-family: 'DM Sans', sans-serif;
+font-size: 13px;
+}
+/* ══════════════════════════════
+EBOOK GENERATOR STYLES
+══════════════════════════════ */
+.ebook-hero {
+background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(123,79,212,0.08));
+border: 1px solid rgba(201,168,76,0.2);
+border-radius: 16px;
+padding: 20px;
+margin-bottom: 16px;
+text-align: center;
+}
+.ebook-hero-title {
+font-family: 'Bebas Neue';
+font-size: 26px;
+letter-spacing: .2em;
+background: linear-gradient(135deg, var(--gold), var(--gold2));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+margin-bottom: 6px;
+}
+.ebook-hero-sub {
+font-size: 12px;
+color: var(--muted);
+line-height: 1.5;
+}
+.ebook-type-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 8px;
+margin-top: 4px;
+}
+.ebook-type-card {
+background: rgba(255,255,255,0.03);
+border: 1px solid var(--border);
+border-radius: 12px;
+padding: 14px 12px;
+cursor: pointer;
+transition: all .2s;
+text-align: center;
+}
+.ebook-type-card:hover, .ebook-type-card.active {
+border-color: var(--gold);
+background: rgba(201,168,76,0.08);
+}
+.ebook-type-icon { font-size: 24px; margin-bottom: 6px; }
+.ebook-type-name { font-size: 12px; font-weight: 600; color: var(--white); margin-bottom: 3px; }
+.ebook-type-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
+.ebook-type-card.active .ebook-type-name { color: var(--gold); }
+/* Ebook preview */
+.ebook-preview-wrap {
+background: #fff;
+border-radius: 12px;
+overflow: hidden;
+margin-bottom: 12px;
+box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+min-height: 200px;
+}
+#ebookPreviewFrame {
+width: 100%;
+border: none;
+display: block;
+min-height: 400px;
+}
+.ebook-progress {
+display: none;
+align-items: center;
+gap: 10px;
+padding: 14px;
+background: rgba(201,168,76,0.08);
+border: 1px solid rgba(201,168,76,0.2);
+border-radius: 10px;
+margin-bottom: 12px;
+font-size: 12px;
+color: var(--gold);
+}
+.ebook-progress.visible { display: flex; }
+.price-row {
+display: flex;
+gap: 8px;
+align-items: center;
+}
+.price-row input {
+flex: 1;
+}
+.price-currency {
+font-size: 20px;
+color: var(--gold);
+font-family: 'Bebas Neue';
+letter-spacing: .1em;
+flex-shrink: 0;
+padding-top: 2px;
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="nav-logo">APHRODYTE3</div>
+<div class="tabs">
+<button class="tab active" onclick="showScreen('quote')">📝 Quote</button>
+<button class="tab" onclick="showScreen('motion')">✨ Motion</button>
+<button class="tab" onclick="showScreen('export')">⬇ Export</button>
+<button class="tab" onclick="showScreen('ai')">🤖 AI PA</button>
+<button class="tab" onclick="showScreen('ebook')">📖 Ebook</button>
+</div>
+</nav>
+<div id="screen-quote" class="screen active">
+<div class="panel" style="padding:14px">
+<div class="sec-label">Live Preview</div>
+<div id="previewWrap">
+<canvas id="bgCanvas" width="1080" height="1920" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+<canvas id="liveCanvas" width="1080" height="1920"></canvas>
+</div>
+<div class="btn-row">
+<button class="btn btn-gold" onclick="downloadStatic()">⬇ Save Image</button>
+<button class="btn btn-purple" onclick="showScreen('motion')">✨ Add Motion</button>
+</div>
+</div>
+<div class="panel">
+<div class="sec-label">📸 Your Photo</div>
+<div class="upload-zone" id="uploadZone">
+<input type="file" accept="image/*" multiple onchange="handleUpload(event)">
+<div class="upload-icon">📷</div>
+<div class="upload-text"><strong>Tap to upload</strong><br>or drag a photo here</div>
+</div>
+<div class="photo-grid" id="photoGrid"></div>
+</div>
+<div class="panel">
+<div class="sec-label">✦ Quote Text</div>
+<div class="quote-list" id="quoteList"></div>
+<label class="ctrl-label" style="margin-top:14px">Write / edit your quote</label>
+<textarea id="quoteInput" placeholder="Type something that hits differently…" oninput="renderCard()"></textarea>
+<label class="ctrl-label">Handle / credit</label>
+<input type="text" id="handleInput" value="@aphrodyte3" oninput="renderCard()">
+</div>
+<div class="panel">
+<div class="sec-label">🎨 Style</div>
+<label class="ctrl-label">Theme</label>
+<div class="chip-grid" id="themeChips"></div>
+<label class="ctrl-label">Font</label>
+<div class="chip-grid" id="fontChips"></div>
+<label class="ctrl-label">Text colour</label>
+<div class="swatch-row" id="textSwatches"></div>
+<label class="ctrl-label">Text position</label>
+<div class="pos-grid">
+<div class="pos-btn" onclick="setPos(this,'top-left')">↖</div>
+<div class="pos-btn" onclick="setPos(this,'top-center')">↑</div>
+<div class="pos-btn" onclick="setPos(this,'top-right')">↗</div>
+<div class="pos-btn active" onclick="setPos(this,'center')">✦</div>
+<div class="pos-btn" onclick="setPos(this,'mid-left')">←</div>
+<div class="pos-btn" onclick="setPos(this,'mid-right')">→</div>
+<div class="pos-btn" onclick="setPos(this,'bottom-left')">↙</div>
+<div class="pos-btn" onclick="setPos(this,'bottom-center')">↓</div>
+<div class="pos-btn" onclick="setPos(this,'bottom-right')">↘</div>
+</div>
+<label class="ctrl-label">Font size</label>
+<input type="range" id="fontSizeSlider" min="30" max="120" value="68" oninput="renderCard()">
+<label class="ctrl-label">Overlay darkness</label>
+<input type="range" id="overlaySlider" min="0" max="90" value="40" oninput="renderCard()">
+<label class="ctrl-label">Text shadow</label>
+<div class="chip-grid">
+<div class="chip active" onclick="setShadow(this,'none')">None</div>
+<div class="chip" onclick="setShadow(this,'soft')">Soft</div>
+<div class="chip" onclick="setShadow(this,'glow')">Glow</div>
+<div class="chip" onclick="setShadow(this,'hard')">Hard</div>
+</div>
+</div>
+</div>
+<div id="screen-motion" class="screen">
+<div class="panel" style="padding:14px">
+<div class="sec-label">Motion Preview</div>
+<div id="motionPreview">
+<canvas id="motionCanvas" width="1080" height="1920"></canvas>
+</div>
+<div class="btn-row">
+<button class="btn btn-outline" id="motionPlayBtn" onclick="toggleMotionPreview()">▶ Play</button>
+<button class="btn btn-gold" onclick="openExport()">⬇ Export Video</button>
+</div>
+</div>
+<div class="panel">
+<div class="sec-label">✨ Motion Effect</div>
+<div class="fx-grid" id="fxGrid">
+<div class="fx-card active" data-fx="ken-burns" onclick="setFx(this,'ken-burns')">
+<div class="fx-icon">🔭</div><div class="fx-name">Ken Burns<br><span style="font-size:10px;opacity:.6">Slow zoom in</span></div>
+</div>
+<div class="fx-card" data-fx="float" onclick="setFx(this,'float')">
+<div class="fx-icon">🌊</div><div class="fx-name">Float<br><span style="font-size:10px;opacity:.6">Gentle drift</span></div>
+</div>
+<div class="fx-card" data-fx="glitch" onclick="setFx(this,'glitch')">
+<div class="fx-icon">⚡</div><div class="fx-name">Glitch<br><span style="font-size:10px;opacity:.6">Digital glitch</span></div>
+</div>
+<div class="fx-card" data-fx="breathe" onclick="setFx(this,'breathe')">
+<div class="fx-icon">💫</div><div class="fx-name">Breathe<br><span style="font-size:10px;opacity:.6">Pulse in/out</span></div>
+</div>
+<div class="fx-card" data-fx="particles" onclick="setFx(this,'particles')">
+<div class="fx-icon">✨</div><div class="fx-name">Particles<br><span style="font-size:10px;opacity:.6">Floating dust</span></div>
+</div>
+<div class="fx-card" data-fx="light-leak" onclick="setFx(this,'light-leak')">
+<div class="fx-icon">🌟</div><div class="fx-name">Light Leak<br><span style="font-size:10px;opacity:.6">Cinematic glow</span></div>
+</div>
+<div class="fx-card" data-fx="zoom-blur" onclick="setFx(this,'zoom-blur')">
+<div class="fx-icon">🌀</div><div class="fx-name">Zoom Blur<br><span style="font-size:10px;opacity:.6">Dramatic pull</span></div>
+</div>
+<div class="fx-card" data-fx="rain" onclick="setFx(this,'rain')">
+<div class="fx-icon">🌧</div><div class="fx-name">Rain<br><span style="font-size:10px;opacity:.6">Moody rain</span></div>
+</div>
+</div>
+</div>
+<div class="panel">
+<div class="sec-label">⚙️ Effect Settings</div>
+<label class="ctrl-label">Speed</label>
+<input type="range" id="fxSpeed" min="1" max="10" value="5" oninput="updateFxSettings()">
+<label class="ctrl-label">Intensity</label>
+<input type="range" id="fxIntensity" min="1" max="10" value="5" oninput="updateFxSettings()">
+<label class="ctrl-label">Duration (seconds)</label>
+<div class="chip-grid">
+<div class="chip active" onclick="setDuration(this,5)">5s</div>
+<div class="chip" onclick="setDuration(this,10)">10s</div>
+<div class="chip" onclick="setDuration(this,15)">15s</div>
+<div class="chip" onclick="setDuration(this,30)">30s</div>
+</div>
+</div>
+</div>
+<div id="screen-export" class="screen">
+<div class="panel">
+<div class="sec-label">⬇ Export Options</div>
+<label class="ctrl-label">Format</label>
+<div class="chip-grid">
+<div class="chip active" onclick="setExportFmt(this,'image')">🖼 Static Image<br><span style="font-size:10px">PNG · 1080×1920</span></div>
+<div class="chip" onclick="setExportFmt(this,'video')">🎬 Animated Video<br><span style="font-size:10px">WebM · 9:16</span></div>
+<div class="chip" onclick="setExportFmt(this,'gif')">🔄 GIF<br><span style="font-size:10px">Looping · smaller</span></div>
+</div>
+<label class="ctrl-label">Platform preset</label>
+<div class="chip-grid">
+<div class="chip active" onclick="setPlatform(this,'tiktok')">TikTok Story</div>
+<div class="chip" onclick="setPlatform(this,'reels')">IG Reels</div>
+<div class="chip" onclick="setPlatform(this,'post')">IG Post</div>
+<div class="chip" onclick="setPlatform(this,'square')">Square</div>
+</div>
+<div class="btn-row" style="margin-top:24px">
+<button class="btn btn-gold" onclick="doExport()">⬇ Download Now</button>
+</div>
+<div style="margin-top:16px; padding:14px; background:rgba(123,79,212,0.1); border:1px solid rgba(123,79,212,0.2); border-radius:10px;">
+<div style="font-size:12px; color:var(--muted); line-height:1.6;">
+💡 <strong style="color:var(--purple2)">TikTok tip:</strong> For moving photos, export as Video then share directly to TikTok. For quote cards, PNG gives the best quality.
+</div>
+</div>
+</div>
+</div>
+<div id="screen-ebook" class="screen">
+<div class="ebook-hero">
+<div class="ebook-hero-title">📖 Ebook Creator</div>
+<div class="ebook-hero-sub">Generate a branded, sellable ebook in minutes.<br>Perfect for Gumroad, Stan Store or your TikTok bio link.</div>
+</div>
+<div class="panel">
+<div class="sec-label">① Choose Your Ebook Type</div>
+<div class="ebook-type-grid" id="ebookTypeGrid">
+<div class="ebook-type-card active" data-type="guide" onclick="selectEbookType(this,'guide')">
+<div class="ebook-type-icon">🗺</div>
+<div class="ebook-type-name">How-To Guide</div>
+<div class="ebook-type-desc">Step-by-step actionable guide</div>
+</div>
+<div class="ebook-type-card" data-type="workbook" onclick="selectEbookType(this,'workbook')">
+<div class="ebook-type-icon">✍️</div>
+<div class="ebook-type-name">Workbook</div>
+<div class="ebook-type-desc">Exercises, prompts & reflection</div>
+</div>
+<div class="ebook-type-card" data-type="checklist" onclick="selectEbookType(this,'checklist')">
+<div class="ebook-type-icon">✅</div>
+<div class="ebook-type-name">Checklist / Toolkit</div>
+<div class="ebook-type-desc">Quick-reference resource</div>
+</div>
+<div class="ebook-type-card" data-type="manifesto" onclick="selectEbookType(this,'manifesto')">
+<div class="ebook-type-icon">🔥</div>
+<div class="ebook-type-name">Manifesto</div>
+<div class="ebook-type-desc">Powerful beliefs & mindset shift</div>
+</div>
+</div>
+</div>
+<div class="panel">
+<div class="sec-label">② Topic & Details</div>
+<label class="ctrl-label">Ebook title</label>
+<input type="text" id="ebookTitle" placeholder="e.g. The Silent Man — Why He Shuts Down & How to Reach Him">
+<label class="ctrl-label">Who is it for?</label>
+<input type="text" id="ebookAudience" placeholder="e.g. women who love emotionally unavailable men">
+<label class="ctrl-label">Core transformation (what will they gain?)</label>
+<input type="text" id="ebookTransformation" placeholder="e.g. understand why he goes silent and finally feel heard">
+<label class="ctrl-label">Number of chapters / sections</label>
+<div class="chip-grid">
+<div class="chip" onclick="selectSingleChip(this,'ebook-chapters')">5</div>
+<div class="chip active" onclick="selectSingleChip(this,'ebook-chapters')">7</div>
+<div class="chip" onclick="selectSingleChip(this,'ebook-chapters')">10</div>
+</div>
+<label class="ctrl-label">Price you plan to sell it for</label>
+<div class="price-row">
+<div class="price-currency">£</div>
+<input type="text" id="ebookPrice" placeholder="7.99" style="font-size:16px;">
+</div>
+</div>
+<div class="panel">
+<div class="sec-label">③ Brand Style</div>
+<label class="ctrl-label">Cover theme</label>
+<div class="chip-grid">
+<div class="chip active" onclick="selectSingleChip(this,'ebook-theme')">Dark Gold ✦</div>
+<div class="chip" onclick="selectSingleChip(this,'ebook-theme')">Midnight Purple</div>
+<div class="chip" onclick="selectSingleChip(this,'ebook-theme')">Warm Cream</div>
+<div class="chip" onclick="selectSingleChip(this,'ebook-theme')">All Black</div>
+</div>
+<label class="ctrl-label">Author name on cover</label>
+<input type="text" id="ebookAuthor" value="Stella — @aphrodyte3">
+</div>
+<div class="panel">
+<div class="sec-label">④ Generate & Download</div>
+<div class="ebook-progress" id="ebookProgress">
+<div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>
+<span id="ebookProgressText">Writing your ebook…</span>
+</div>
+<div id="ebookPreviewWrap" style="display:none;">
+<div class="ebook-preview-wrap">
+<iframe id="ebookPreviewFrame" title="Ebook Preview"></iframe>
+</div>
+<div style="padding:12px; background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2); border-radius:10px; margin-bottom:12px;">
+<div style="font-size:12px; color:#4ade80; line-height:1.6;">
+✅ <strong>Your ebook is ready!</strong> Tap Download to save as PDF. Then upload to Gumroad, Stan Store or sell via your TikTok bio link.
+</div>
+</div>
+</div>
+<div class="btn-row">
+<button class="btn btn-gold" onclick="generateEbook()" id="btnGenerateEbook">✨ Generate Ebook</button>
+</div>
+<div id="ebookDownloadRow" style="display:none; margin-top:10px;">
+<button class="btn btn-purple" style="width:100%" onclick="downloadEbook()">⬇ Download as PDF</button>
+</div>
+<div style="margin-top:14px; padding:12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px;">
+<div style="font-size:11px; color:var(--muted); line-height:1.7;">
+💡 <strong style="color:var(--white)">Selling tip:</strong> Price between £5–£15 for impulse buys. Create a 60-second TikTok showing 3 things from the ebook — link in bio. First 100 sales target within 7 days of launch.
+</div>
+</div>
+</div>
+</div>
+<div id="screen-ai" class="screen">
+<div class="pa-hero">
+<div class="pa-hero-title">AI Content PA</div>
+<div class="pa-hero-sub">Your on-demand creative strategist — built for @aphrodyte3.<br>Pick your niche, choose a tool, get scroll-stopping output.</div>
+</div>
+<div class="api-key-panel" id="apiKeyPanel">
+<div class="api-key-header">
+<div class="api-key-status" id="apiKeyStatus"></div>
+<div>
+<div class="api-key-label">Google Gemini API Key <span style="background:rgba(74,222,128,0.15);color:#4ade80;font-size:10px;padding:2px 7px;border-radius:10px;margin-left:4px;">FREE</span></div>
+<div class="api-key-sublabel" id="apiKeySubLabel">Required to use AI tools — completely free</div>
+</div>
+</div>
+<div class="api-key-input-row">
+<input type="password" id="apiKeyInput" placeholder="AIza…" autocomplete="off" autocorrect="off" spellcheck="false">
+<button class="btn-eye" id="eyeBtn" onclick="toggleKeyVisibility()">👁</button>
+<button class="btn-save-key" onclick="saveApiKey()">Save</button>
+</div>
+<div class="api-key-hint">
+Get your <strong style="color:var(--gold2)">100% free</strong> key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> — no credit card, no cost ever. Your key is saved only in this browser.
+</div>
+</div>
+<div class="context-bar">
+<div class="context-bar-title">✦ Your Niche Context</div>
+<div class="context-niche-chips" id="nicheChips">
+<div class="niche-chip active" onclick="toggleNiche(this)">Men's Mental Health</div>
+<div class="niche-chip active" onclick="toggleNiche(this)">Emotional Wellness</div>
+<div class="niche-chip active" onclick="toggleNiche(this)">Parenting</div>
+<div class="niche-chip active" onclick="toggleNiche(this)">Relationships</div>
+<div class="niche-chip active" onclick="toggleNiche(this)">Shadow Work</div>
+<div class="niche-chip active" onclick="toggleNiche(this)">Personal Dev</div>
+<div class="niche-chip" onclick="toggleNiche(this)">Inner Child</div>
+<div class="niche-chip" onclick="toggleNiche(this)">Schema Therapy</div>
+<div class="niche-chip" onclick="toggleNiche(this)">Jungian Psychology</div>
+</div>
+<div style="margin-top:10px;">
+<input type="text" id="customNicheInput" placeholder="Add a custom topic…" style="font-size:12px; padding:8px 12px;" onkeydown="addCustomNiche(event)">
+</div>
+</div>
+<div class="prompt-tool-grid" id="promptToolGrid">
+<div class="prompt-tool-card" id="tool-viral">
+<div class="ptc-header" onclick="toggleTool('tool-viral')">
+<div class="ptc-icon">🚀</div>
+<div class="ptc-info">
+<div class="ptc-title">Viral Content Ideas</div>
+<div class="ptc-desc">10 scroll-stopping ideas with high share &amp; save potential</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Specific angle or focus (optional)</label>
+<input type="text" id="viral-angle" placeholder="e.g. fathers who never say I love you…">
+<button class="btn-run" onclick="runTool('viral')" id="btn-viral">✨ Generate with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('viral')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-viral"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Creating ideas…</div>
+<div class="ai-output-wrap" id="wrap-viral">
+<div class="ai-output" id="out-viral"></div>
+<div class="ai-output-actions" id="act-viral" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-viral')">📋 Copy</button>
+<button class="btn-use-sm" onclick="useAsQuote('out-viral')">✦ Quote</button>
+</div>
+</div>
+</div>
+</div>
+<div class="prompt-tool-card" id="tool-hook">
+<div class="ptc-header" onclick="toggleTool('tool-hook')">
+<div class="ptc-icon">🪝</div>
+<div class="ptc-info">
+<div class="ptc-title">Turn Pain into a Hook</div>
+<div class="ptc-desc">10 audience frustrations → bold punchy hooks (10 words max)</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Topic</label>
+<input type="text" id="hook-topic" placeholder="e.g. men who can't express emotion">
+<button class="btn-run" onclick="runTool('hook')" id="btn-hook">✨ Generate with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('hook')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-hook"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Writing hooks…</div>
+<div class="ai-output-wrap" id="wrap-hook">
+<div class="ai-output" id="out-hook"></div>
+<div class="ai-output-actions" id="act-hook" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-hook')">📋 Copy</button>
+<button class="btn-use-sm" onclick="useAsQuote('out-hook')">✦ Use as Quote</button>
+</div>
+</div>
+</div>
+</div>
+<div class="prompt-tool-card" id="tool-reel">
+<div class="ptc-header" onclick="toggleTool('tool-reel')">
+<div class="ptc-icon">🎬</div>
+<div class="ptc-info">
+<div class="ptc-title">Reels Script</div>
+<div class="ptc-desc">30-second script: hook → story → value → CTA</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Topic</label>
+<input type="text" id="reel-topic" placeholder="e.g. why some men shut down instead of cry">
+<label class="ctrl-label">Tone</label>
+<div class="chip-grid">
+<div class="chip active" onclick="selectSingleChip(this, 'reel-tone')">Clinical but human</div>
+<div class="chip" onclick="selectSingleChip(this, 'reel-tone')">Raw &amp; personal</div>
+<div class="chip" onclick="selectSingleChip(this, 'reel-tone')">Empowering</div>
+<div class="chip" onclick="selectSingleChip(this, 'reel-tone')">Provocative</div>
+</div>
+<button class="btn-run" onclick="runTool('reel')" id="btn-reel">✨ Write Script with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('reel')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-reel"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Scripting…</div>
+<div class="ai-output-wrap" id="wrap-reel">
+<div class="ai-output" id="out-reel"></div>
+<div class="ai-output-actions" id="act-reel" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-reel')">📋 Copy</button>
+<button class="btn-use-sm" onclick="useAsQuote('out-reel')">✦ Use as Quote</button>
+</div>
+</div>
+</div>
+</div>
+<div class="prompt-tool-card" id="tool-proof">
+<div class="ptc-header" onclick="toggleTool('tool-proof')">
+<div class="ptc-icon">💎</div>
+<div class="ptc-info">
+<div class="ptc-title">Social Proof Phrases</div>
+<div class="ptc-desc">Turn a result into 10 on-screen credibility phrases</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Your result or achievement</label>
+<textarea id="proof-result" placeholder="e.g. I helped a client identify their abandonment schema after 15 years of wondering why they kept choosing the same type of partner…" style="min-height:70px;"></textarea>
+<button class="btn-run" onclick="runTool('proof')" id="btn-proof">✨ Generate with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('proof')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-proof"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Building credibility…</div>
+<div class="ai-output-wrap" id="wrap-proof">
+<div class="ai-output" id="out-proof"></div>
+<div class="ai-output-actions" id="act-proof" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-proof')">📋 Copy</button>
+<button class="btn-use-sm" onclick="useAsQuote('out-proof')">✦ Use as Quote</button>
+</div>
+</div>
+</div>
+</div>
+<div class="prompt-tool-card" id="tool-tips">
+<div class="ptc-header" onclick="toggleTool('tool-tips')">
+<div class="ptc-icon">💾</div>
+<div class="ptc-info">
+<div class="ptc-title">Save-Worthy Tips</div>
+<div class="ptc-desc">5 little-known tips — under 12 words, instantly actionable</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Topic</label>
+<input type="text" id="tips-topic" placeholder="e.g. healing the inner child as a parent">
+<button class="btn-run" onclick="runTool('tips')" id="btn-tips">✨ Generate with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('tips')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-tips"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Finding gems…</div>
+<div class="ai-output-wrap" id="wrap-tips">
+<div class="ai-output" id="out-tips"></div>
+<div class="ai-output-actions" id="act-tips" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-tips')">📋 Copy</button>
+<button class="btn-use-sm" onclick="useAsQuote('out-tips')">✦ Use as Quote</button>
+</div>
+</div>
+</div>
+</div>
+<div class="prompt-tool-card" id="tool-repurpose">
+<div class="ptc-header" onclick="toggleTool('tool-repurpose')">
+<div class="ptc-icon">♻️</div>
+<div class="ptc-info">
+<div class="ptc-title">Repurpose Like a Machine</div>
+<div class="ptc-desc">One text → 7s Reel · 5-slide carousel · static post</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Paste your text</label>
+<textarea id="repurpose-text" placeholder="Paste a caption, script snippet, quote, or any content…" style="min-height:100px;"></textarea>
+<button class="btn-run" onclick="runTool('repurpose')" id="btn-repurpose">✨ Repurpose with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('repurpose')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-repurpose"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Remixing…</div>
+<div class="ai-output-wrap" id="wrap-repurpose">
+<div class="ai-output" id="out-repurpose"></div>
+<div class="ai-output-actions" id="act-repurpose" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-repurpose')">📋 Copy</button>
+</div>
+</div>
+</div>
+</div>
+<div class="prompt-tool-card" id="tool-cta">
+<div class="ptc-header" onclick="toggleTool('tool-cta')">
+<div class="ptc-icon">💬</div>
+<div class="ptc-info">
+<div class="ptc-title">Irresistible CTAs</div>
+<div class="ptc-desc">10 curiosity-driven CTAs that drive comments &amp; saves</div>
+</div>
+<div class="ptc-arrow">▶</div>
+</div>
+<div class="ptc-body">
+<label class="ctrl-label">Post topic</label>
+<input type="text" id="cta-topic" placeholder="e.g. emotional unavailability in Black men">
+<label class="ctrl-label">Goal</label>
+<div class="chip-grid">
+<div class="chip active" onclick="selectSingleChip(this, 'cta-goal')">Comments</div>
+<div class="chip" onclick="selectSingleChip(this, 'cta-goal')">Saves</div>
+<div class="chip" onclick="selectSingleChip(this, 'cta-goal')">Shares</div>
+<div class="chip" onclick="selectSingleChip(this, 'cta-goal')">Profile visits</div>
+</div>
+<button class="btn-run" onclick="runTool('cta')" id="btn-cta">✨ Write CTAs with Gemini</button>
+<button class="btn-run" onclick="copyForClaude('cta')" style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border:1px solid rgba(201,168,76,0.3);margin-top:6px;">📋 Copy prompt for Claude instead</button>
+<div class="ai-generating" id="gen-cta"><div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>Writing CTAs…</div>
+<div class="ai-output-wrap" id="wrap-cta">
+<div class="ai-output" id="out-cta"></div>
+<div class="ai-output-actions" id="act-cta" style="display:none">
+<button class="btn-copy-sm" onclick="copyOutput('out-cta')">📋 Copy</button>
+<button class="btn-use-sm" onclick="useAsQuote('out-cta')">✦ Use as Quote</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="exportOverlay">
+<div class="export-box">
+<div class="export-title">Creating Your Card</div>
+<div class="export-sub" id="exportStatus">Rendering frames…</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<button class="btn btn-outline" style="flex:none;width:100%" onclick="document.getElementById('exportOverlay').classList.remove('show')">Cancel</button>
+</div>
+</div>
+<div id="setupOverlay">
+<div class="setup-wrap">
+<div class="setup-logo">APHRODYTE3</div>
+<div class="setup-title">Set Up Your<br>AI Content PA</div>
+<div class="setup-sub">
+Powered by Google Gemini — <strong style="color:#4ade80">completely free</strong>, no credit card ever.<br>Takes 60 seconds. You only do this once.
+</div>
+<div class="setup-steps">
+<div class="setup-step">
+<div class="step-num">1</div>
+<div class="step-body">
+<div class="step-title">Go to Google AI Studio</div>
+<div class="step-desc">
+Open <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> — sign in with your Google account. It's the same Google you already use.
+<div class="cost-badge">💚 100% free — no card needed</div>
+</div>
+</div>
+</div>
+<div class="setup-step">
+<div class="step-num">2</div>
+<div class="step-body">
+<div class="step-title">Create an API Key</div>
+<div class="step-desc">
+Tap <strong style="color:var(--white)">Create API Key</strong> → select any project (or create new) → tap <strong style="color:var(--white)">Create API key in existing project</strong>.
+</div>
+</div>
+</div>
+<div class="setup-step">
+<div class="step-num">3</div>
+<div class="step-body">
+<div class="step-title">Copy your key</div>
+<div class="step-desc">
+A key appears starting with <code>AIza…</code> — tap the copy icon next to it, then come straight back here.
+</div>
+</div>
+</div>
+<div class="setup-step">
+<div class="step-num">4</div>
+<div class="step-body">
+<div class="step-title">Paste it below and tap Save</div>
+<div class="step-desc">
+Done. Your key is stored only in this browser — nobody else can see it.
+</div>
+</div>
+</div>
+</div>
+<hr class="setup-divider">
+<div class="setup-key-section">
+<div class="setup-key-label">✦ Paste your API key here</div>
+<div class="setup-input-row">
+<input type="password" id="setupKeyInput" placeholder="AIza…" autocomplete="off" autocorrect="off" spellcheck="false">
+<button class="btn-eye" id="setupEyeBtn" onclick="toggleSetupKeyVisibility()">👁</button>
+</div>
+<button class="btn-setup-save" onclick="saveSetupKey()">Save Key &amp; Start Creating ✦</button>
+<button class="btn-setup-skip" onclick="dismissSetup()">I'll do this later</button>
+<div class="setup-note">Your key never leaves your device.<br>It's saved in your browser's local storage only.</div>
+</div>
+</div>
+</div>
+<div id="toast"></div>
+<script>
+/* ══════════════════════════════════════
+DATA
+══════════════════════════════════════ */
+const QUOTES = [
+"She's not being difficult. She's just done performing peace she doesn't feel.",
+"I used to be someone's villain in a story I never agreed to be in.",
+"Studied. Referenced. Remembered. And I haven't even peaked yet.",
+"I didn't chase the spotlight. I just stopped hiding from it.",
+"There's a version of you that stopped shrinking. She's been waiting. Let her out.",
+"Unbothered isn't a mood. It's a decision I make every single morning.",
+"My brain said 'be rational.' My nervous system said 'absolutely not.'",
+"She glows in the dark too. Always has.",
+"This is what healing looks like. Joy. On purpose. Out loud.",
+"Raise them to play like nobody's watching. The world will try to take that from them soon enough.",
+"Healing didn't make me soft. It made me this.",
+"I don't do things halfway. Never have. Therapy confirmed it.",
+"Sometimes the most radical thing you can do is feel it fully and not apologise.",
+"My nervous system is healing. Slowly. Loudly. Mine."
+];
+const THEMES = [
+{ name:'Dark Gold', bg:'#0a0a0a', overlay:'linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.6) 100%)' },
+{ name:'Midnight', bg:'#0f0f18', overlay:'linear-gradient(180deg,rgba(15,15,24,0.3) 0%,rgba(15,15,24,0.75) 100%)' },
+{ name:'Mocha', bg:'#1a1008', overlay:'linear-gradient(180deg,rgba(26,16,8,0.2) 0%,rgba(26,16,8,0.7) 100%)' },
+{ name:'Slate', bg:'#0d1117', overlay:'linear-gradient(180deg,rgba(13,17,23,0.2) 0%,rgba(13,17,23,0.75) 100%)' },
+];
+const FONTS = [
+{ name:'Cormorant', css:'Cormorant Garamond,serif' },
+{ name:'Playfair', css:'Playfair Display,serif' },
+{ name:'Bebas', css:'Bebas Neue,sans-serif' },
+{ name:'DM Sans', css:'DM Sans,sans-serif' },
+];
+const TEXT_COLORS = ['#ffffff','#e8c97a','#a67ee8','#f5f0e8','#ffd6e0','#b8f0e8'];
+let state = {
+photos: [],
+activePhoto: null,
+quote: QUOTES[0],
+handle: '@aphrodyte3',
+themeIdx: 0,
+fontIdx: 0,
+textColor: '#ffffff',
+position: 'center',
+fontSize: 68,
+overlayOpacity: 40,
+shadow: 'none',
+fx: 'ken-burns',
+fxSpeed: 5,
+fxIntensity: 5,
+duration: 5,
+exportFmt: 'image',
+platform: 'tiktok',
+};
+/* ── NAV ── */
+function showScreen(name) {
+document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+document.getElementById('screen-'+name).classList.add('active');
+const tabs = document.querySelectorAll('.tab');
+const map = {quote:0, motion:1, export:2, ai:3, ebook:4};
+if (map[name] !== undefined) tabs[map[name]].classList.add('active');
+if (name === 'motion') startMotionLoop();
+}
+/* ── BUILD UI ── */
+function buildUI() {
+// Quotes
+const ql = document.getElementById('quoteList');
+QUOTES.forEach((q,i) => {
+const b = document.createElement('button');
+b.className = 'q-btn' + (i===0?' active':'');
+b.textContent = q.length>80 ? q.slice(0,80)+'…' : q;
+b.onclick = () => { document.querySelectorAll('.q-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); state.quote = q; document.getElementById('quoteInput').value = q; renderCard(); };
+ql.appendChild(b);
+});
+document.getElementById('quoteInput').value = state.quote;
+// Themes
+const tc = document.getElementById('themeChips');
+THEMES.forEach((t,i) => {
+const c = document.createElement('div');
+c.className = 'chip'+(i===0?' active':'');
+c.textContent = t.name;
+c.onclick = () => { document.querySelectorAll('#themeChips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); state.themeIdx=i; renderCard(); };
+tc.appendChild(c);
+});
+// Fonts
+const fc = document.getElementById('fontChips');
+FONTS.forEach((f,i) => {
+const c = document.createElement('div');
+c.className = 'chip'+(i===0?' active':'');
+c.textContent = f.name;
+c.onclick = () => { document.querySelectorAll('#fontChips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); state.fontIdx=i; renderCard(); };
+fc.appendChild(c);
+});
+// Text colors
+const sw = document.getElementById('textSwatches');
+TEXT_COLORS.forEach((col,i) => {
+const s = document.createElement('div');
+s.className = 'swatch'+(i===0?' active':'');
+s.style.background = col;
+s.onclick = () => { document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active')); s.classList.add('active'); state.textColor=col; renderCard(); };
+sw.appendChild(s);
+});
+renderCard();
+}
+/* ── PHOTO UPLOAD ── */
+function handleUpload(e) {
+Array.from(e.target.files).forEach(file => {
+const reader = new FileReader();
+reader.onload = ev => {
+const img = new Image();
+img.onload = () => {
+state.photos.push({img, src: ev.target.result});
+if (!state.activePhoto) state.activePhoto = state.photos[0];
+renderPhotoGrid();
+renderCard();
+};
+img.src = ev.target.result;
+};
+reader.readAsDataURL(file);
+});
+}
+function renderPhotoGrid() {
+const grid = document.getElementById('photoGrid');
+grid.innerHTML = '';
+state.photos.forEach((p,i) => {
+const wrap = document.createElement('div');
+wrap.className = 'photo-thumb'+(p===state.activePhoto?' selected':'');
+const img = document.createElement('img');
+img.src = p.src;
+wrap.appendChild(img);
+const del = document.createElement('div');
+del.className = 'del-btn';
+del.textContent = '×';
+del.onclick = ev => { ev.stopPropagation(); state.photos.splice(i,1); if (state.activePhoto===p) state.activePhoto=state.photos[0]||null; renderPhotoGrid(); renderCard(); };
+wrap.appendChild(del);
+wrap.onclick = () => { state.activePhoto=p; renderPhotoGrid(); renderCard(); };
+grid.appendChild(wrap);
+});
+}
+/* ── CANVAS RENDER ── */
+function renderCard() {
+state.quote = document.getElementById('quoteInput').value || state.quote;
+state.handle = document.getElementById('handleInput').value;
+state.fontSize = parseInt(document.getElementById('fontSizeSlider').value);
+state.overlayOpacity = parseInt(document.getElementById('overlaySlider').value);
+const bgC = document.getElementById('bgCanvas');
+const liveC = document.getElementById('liveCanvas');
+const bgCtx = bgC.getContext('2d');
+const ctx = liveC.getContext('2d');
+const W = 1080, H = 1920;
+bgCtx.clearRect(0,0,W,H);
+bgCtx.fillStyle = THEMES[state.themeIdx].bg;
+bgCtx.fillRect(0,0,W,H);
+if (state.activePhoto) {
+const {img} = state.activePhoto;
+const ar = img.width/img.height;
+let dw = W, dh = W/ar;
+if (dh < H) { dh = H; dw = H*ar; }
+bgCtx.drawImage(img, (W-dw)/2, (H-dh)/2, dw, dh);
+}
+// overlay
+const ov = bgCtx.createLinearGradient(0,0,0,H);
+const a = state.overlayOpacity/100;
+ov.addColorStop(0, `rgba(0,0,0,${a*0.3})`);
+ov.addColorStop(1, `rgba(0,0,0,${a})`);
+bgCtx.fillStyle = ov;
+bgCtx.fillRect(0,0,W,H);
+ctx.clearRect(0,0,W,H);
+drawText(ctx, W, H);
+}
+function drawText(ctx, W, H) {
+const font = FONTS[state.fontIdx].css;
+const fs = state.fontSize;
+ctx.save();
+// shadow
+if (state.shadow==='soft') { ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=20; }
+else if (state.shadow==='glow') { ctx.shadowColor=state.textColor; ctx.shadowBlur=30; }
+else if (state.shadow==='hard') { ctx.shadowColor='#000'; ctx.shadowBlur=0; ctx.shadowOffsetX=3; ctx.shadowOffsetY=3; }
+ctx.fillStyle = state.textColor;
+ctx.font = `400 ${fs}px ${font}`;
+ctx.textAlign = 'center';
+const maxW = W * 0.82;
+const lines = wrapText(ctx, state.quote, maxW);
+const lineH = fs * 1.35;
+const totalH = lines.length * lineH;
+let cx = W/2, cy;
+const pos = state.position;
+if (pos==='center') { cx=W/2; cy=(H-totalH)/2+fs; }
+else if (pos==='top-left') { cx=W*0.25; cy=H*0.12+fs; ctx.textAlign='left'; }
+else if (pos==='top-center') { cx=W/2; cy=H*0.12+fs; }
+else if (pos==='top-right') { cx=W*0.75; cy=H*0.12+fs; ctx.textAlign='right'; }
+else if (pos==='mid-left') { cx=W*0.25; cy=(H-totalH)/2+fs; ctx.textAlign='left'; }
+else if (pos==='mid-right') { cx=W*0.75; cy=(H-totalH)/2+fs; ctx.textAlign='right'; }
+else if (pos==='bottom-left') { cx=W*0.25; cy=H*0.78; ctx.textAlign='left'; }
+else if (pos==='bottom-center') { cx=W/2; cy=H*0.78; }
+else if (pos==='bottom-right') { cx=W*0.75; cy=H*0.78; ctx.textAlign='right'; }
+lines.forEach((line,i) => ctx.fillText(line, cx, cy + i*lineH));
+// handle
+ctx.restore();
+ctx.save();
+ctx.fillStyle = state.textColor;
+ctx.globalAlpha = 0.55;
+ctx.font = `300 32px DM Sans,sans-serif`;
+ctx.textAlign = 'center';
+ctx.fillText(state.handle, W/2, H-90);
+ctx.restore();
+}
+function wrapText(ctx, text, maxW) {
+const words = text.split(' ');
+const lines = [];
+let cur = '';
+words.forEach(w => {
+const test = cur ? cur+' '+w : w;
+if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur=w; }
+else cur = test;
+});
+if (cur) lines.push(cur);
+return lines;
+}
+/* ── STYLE CONTROLS ── */
+function setPos(el, pos) {
+document.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');
+state.position = pos;
+renderCard();
+}
+function setShadow(el, val) {
+document.querySelectorAll('.chip-grid .chip').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+state.shadow = val;
+renderCard();
+}
+function downloadStatic() {
+const bg = document.getElementById('bgCanvas');
+const live = document.getElementById('liveCanvas');
+const out = document.createElement('canvas');
+out.width=1080; out.height=1920;
+const ctx = out.getContext('2d');
+ctx.drawImage(bg,0,0);
+ctx.drawImage(live,0,0);
+const a = document.createElement('a');
+a.download = 'aphrodyte3-card.png';
+a.href = out.toDataURL('image/png');
+a.click();
+showToast('Image saved!');
+}
+/* ── MOTION ── */
+let motionRAF = null;
+let motionPlaying = false;
+let motionT = 0;
+let particles = [];
+function initParticles() {
+particles = Array.from({length:60},()=>({ x:Math.random()*1080, y:Math.random()*1920, r:Math.random()*2+0.5, vy:-Math.random()*0.8-0.2, vx:(Math.random()-0.5)*0.3, opacity:Math.random()*0.6+0.2 }));
+}
+initParticles();
+function toggleMotionPreview() {
+motionPlaying = !motionPlaying;
+document.getElementById('motionPlayBtn').textContent = motionPlaying ? '⏸ Pause' : '▶ Play';
+if (motionPlaying) startMotionLoop();
+}
+function startMotionLoop() {
+if (motionRAF) cancelAnimationFrame(motionRAF);
+function frame() {
+if (!motionPlaying) return;
+motionT += 0.016;
+drawMotionFrame(motionT);
+motionRAF = requestAnimationFrame(frame);
+}
+frame();
+}
+function setFx(el, fx) {
+document.querySelectorAll('.fx-card').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+state.fx = fx;
+}
+function updateFxSettings() {
+state.fxSpeed = parseInt(document.getElementById('fxSpeed').value);
+state.fxIntensity = parseInt(document.getElementById('fxIntensity').value);
+}
+function setDuration(el, d) {
+document.querySelectorAll('#screen-motion .chip').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+state.duration = d;
+}
+function drawMotionFrame(t) {
+const mc = document.getElementById('motionCanvas');
+const ctx = mc.getContext('2d');
+const W=1080, H=1920;
+const spd = state.fxSpeed/5;
+const inten = state.fxIntensity/5;
+ctx.clearRect(0,0,W,H);
+// draw base
+const bg = document.getElementById('bgCanvas');
+const live = document.getElementById('liveCanvas');
+ctx.save();
+if (state.fx==='ken-burns') {
+const scale = 1 + Math.sin(t*0.3*spd)*0.05*inten;
+ctx.translate(W/2,H/2); ctx.scale(scale,scale); ctx.translate(-W/2,-H/2);
+} else if (state.fx==='float') {
+const dy = Math.sin(t*0.8*spd)*12*inten;
+const dx = Math.cos(t*0.5*spd)*6*inten;
+ctx.translate(dx,dy);
+} else if (state.fx==='breathe') {
+const s = 1+Math.sin(t*1.2*spd)*0.04*inten;
+ctx.translate(W/2,H/2); ctx.scale(s,s); ctx.translate(-W/2,-H/2);
+} else if (state.fx==='zoom-blur') {
+const scale = 1 + (t%3)/3*0.08*inten;
+ctx.translate(W/2,H/2); ctx.scale(scale,scale); ctx.translate(-W/2,-H/2);
+ctx.globalAlpha = 1-(t%3)/3*0.3;
+} else if (state.fx==='glitch') {
+if (Math.random()<0.1*inten) ctx.translate((Math.random()-0.5)*20*inten, 0);
+}
+ctx.drawImage(bg,0,0,W,H);
+ctx.restore();
+ctx.drawImage(live,0,0,W,H);
+// particle overlay
+if (state.fx==='particles') {
+particles.forEach(p => {
+p.x += p.vx*spd; p.y += p.vy*spd;
+if (p.y < 0) p.y = H;
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fillStyle = `rgba(201,168,76,${p.opacity*inten})`;
+ctx.fill();
+});
+}
+// light leak
+if (state.fx==='light-leak') {
+const phase = (Math.sin(t*0.5*spd)+1)/2;
+const grad = ctx.createRadialGradient(W*0.2,H*0.1,0,W*0.5,H*0.4,W*0.8);
+grad.addColorStop(0,`rgba(255,220,120,${0.15*phase*inten})`);
+grad.addColorStop(1,'rgba(0,0,0,0)');
+ctx.fillStyle = grad;
+ctx.fillRect(0,0,W,H);
+}
+// rain
+if (state.fx==='rain') {
+for (let i=0;i<30*inten;i++) {
+const rx = Math.random()*W;
+const ry = ((Math.random()*H)+t*200*spd)%H;
+ctx.strokeStyle = `rgba(180,200,255,0.15)`;
+ctx.lineWidth = 1;
+ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-5,ry+30); ctx.stroke();
+}
+}
+}
+/* ── EXPORT ── */
+function openExport() { showScreen('export'); }
+function setExportFmt(el, fmt) {
+document.querySelectorAll('#screen-export .chip').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+state.exportFmt = fmt;
+}
+function setPlatform(el, p) {
+document.querySelectorAll('#screen-export .chip').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+state.platform = p;
+}
+function doExport() {
+if (state.exportFmt==='image') { downloadStatic(); return; }
+showToast('Video export: save the image and add motion in TikTok editor');
+}
+/* ── TOAST ── */
+function showToast(msg) {
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.classList.add('show');
+setTimeout(()=>t.classList.remove('show'), 2500);
+}
+/* ══════════════════════════════════════
+AI CONTENT PA
+══════════════════════════════════════ */
+// API Key management (Gemini)
+function loadApiKey() {
+const saved = localStorage.getItem('aphrodyte3_gemini_key');
+if (saved) {
+document.getElementById('apiKeyInput').value = saved;
+setKeyStatus(true);
+}
+}
+function checkShowSetup() {
+const saved = localStorage.getItem('aphrodyte3_gemini_key');
+const dismissed = localStorage.getItem('aphrodyte3_setup_dismissed');
+if (!saved && !dismissed) {
+document.getElementById('setupOverlay').classList.add('show');
+}
+}
+function saveSetupKey() {
+const val = document.getElementById('setupKeyInput').value.trim();
+if (!val) { showToast('Paste your API key first'); return; }
+localStorage.setItem('aphrodyte3_gemini_key', val);
+document.getElementById('apiKeyInput').value = val;
+setKeyStatus(true);
+document.getElementById('setupOverlay').classList.remove('show');
+showToast('All set — AI tools are ready ✦');
+}
+function dismissSetup() {
+localStorage.setItem('aphrodyte3_setup_dismissed', '1');
+document.getElementById('setupOverlay').classList.remove('show');
+}
+function toggleSetupKeyVisibility() {
+const input = document.getElementById('setupKeyInput');
+const btn = document.getElementById('setupEyeBtn');
+if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+else { input.type = 'password'; btn.textContent = '👁'; }
+}
+function saveApiKey() {
+const val = document.getElementById('apiKeyInput').value.trim();
+if (!val) { showToast('Paste your API key first'); return; }
+localStorage.setItem('aphrodyte3_gemini_key', val);
+setKeyStatus(true);
+showToast('Gemini key saved ✦');
+}
+function setKeyStatus(active) {
+const status = document.getElementById('apiKeyStatus');
+const panel = document.getElementById('apiKeyPanel');
+const sub = document.getElementById('apiKeySubLabel');
+if (active) {
+status.classList.add('on');
+panel.classList.add('unlocked');
+sub.textContent = 'Connected — AI tools ready (free)';
+} else {
+status.classList.remove('on');
+panel.classList.remove('unlocked');
+sub.textContent = 'Required to use AI tools — completely free';
+}
+}
+function toggleKeyVisibility() {
+const input = document.getElementById('apiKeyInput');
+const btn = document.getElementById('eyeBtn');
+if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+else { input.type = 'password'; btn.textContent = '👁'; }
+}
+function getApiKey() {
+return localStorage.getItem('aphrodyte3_gemini_key') || document.getElementById('apiKeyInput').value.trim();
+}
+// Niche management
+function getActiveNiches() {
+return Array.from(document.querySelectorAll('.niche-chip.active'))
+.map(c => c.textContent.trim()).join(', ');
+}
+function toggleNiche(el) {
+el.classList.toggle('active');
+}
+function addCustomNiche(e) {
+if (e.key !== 'Enter') return;
+const val = e.target.value.trim();
+if (!val) return;
+const chips = document.getElementById('nicheChips');
+const chip = document.createElement('div');
+chip.className = 'niche-chip active';
+chip.textContent = val;
+chip.onclick = () => toggleNiche(chip);
+chips.appendChild(chip);
+e.target.value = '';
+}
+// Tool accordion
+function toggleTool(id) {
+const card = document.getElementById(id);
+const isOpen = card.classList.contains('open');
+document.querySelectorAll('.prompt-tool-card').forEach(c => c.classList.remove('open'));
+if (!isOpen) card.classList.add('open');
+}
+// Chip single-select within a group
+function selectSingleChip(el, groupName) {
+const parent = el.closest('.chip-grid');
+parent.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+el.classList.add('active');
+}
+function getSelectedChip(container, fallback) {
+const active = container.querySelector('.chip.active');
+return active ? active.textContent.trim() : fallback;
+}
+// Build the full prompt for a tool (used by both Gemini and Copy for Claude)
+function buildFullPrompt(toolKey) {
+const niches = getActiveNiches() || 'mental health, emotional wellness, relationships';
+const context = `You are a social media content strategist for @aphrodyte3 — a TikTok creator and mental health professional with 15+ years experience. Niche: ${niches}. Content philosophy: three layers — the problem (raw and real), practical solutions (clinical but human), cycle-breaking reframes (exact words the viewer can use). Tone: direct, empowering, clinical but accessible. Audience: Black African, Caribbean, South Asian communities and beyond. No fluff, no filler.\n\n`;
+if (toolKey === 'viral') {
+const angle = document.getElementById('viral-angle').value.trim();
+return context + `Generate 10 scroll-stopping TikTok content ideas with high share and save potential for @aphrodyte3. Be specific. No fluff.${angle ? ' Focus angle: ' + angle : ''}`;
+} else if (toolKey === 'hook') {
+const topic = document.getElementById('hook-topic').value.trim() || 'emotional unavailability';
+return context + `List the 10 biggest frustrations my audience has about "${topic}". Turn each one into a bold, punchy hook (10 words max). Be direct. Be provocative. Number each one.`;
+} else if (toolKey === 'reel') {
+const topic = document.getElementById('reel-topic').value.trim() || 'men who shut down emotionally';
+const toneEl = document.querySelector('#tool-reel .chip-grid');
+const tone = getSelectedChip(toneEl, 'clinical but human');
+return context + `Write a 30-second TikTok Reel script about: "${topic}". Structure:\n1. HOOK (pattern interrupt, first 3 seconds)\n2. STORY (relatable, 1-2 sentences)\n3. VALUE (insight or takeaway)\n4. CTA (clear, specific)\nTone: ${tone}. Simple language. High retention.`;
+} else if (toolKey === 'proof') {
+const result = document.getElementById('proof-result').value.trim() || 'helped a client identify their core schema after years of unhealthy relationship cycles';
+return context + `Take this result: "${result}"\n\nCreate 10 short on-screen text phrases that spark curiosity and credibility. Each under 12 words, punchy, makes viewer want to know more. Number each one.`;
+} else if (toolKey === 'tips') {
+const topic = document.getElementById('tips-topic').value.trim() || 'healing the inner child';
+return context + `List 5 practical, little-known tips about "${topic}". Each tip under 12 words, instantly actionable, impossible not to save. Number each. No generic advice — insider knowledge from a mental health professional.`;
+} else if (toolKey === 'repurpose') {
+const text = document.getElementById('repurpose-text').value.trim();
+if (!text) return null;
+return context + `Repurpose this text into 3 formats:\n\nTEXT: "${text}"\n\n🎬 7-SECOND REEL SCRIPT\n📱 5-SLIDE CAROUSEL (Slide 1-5)\n🖼 STATIC POST CAPTION\n\nAdapt tone and format for each. Keep core message, make each platform-native.`;
+} else if (toolKey === 'cta') {
+const topic = document.getElementById('cta-topic').value.trim() || 'emotional unavailability';
+const goalEl = document.querySelector('#tool-cta .chip-grid');
+const goal = getSelectedChip(goalEl, 'comments');
+return context + `Create 10 curiosity-driven CTAs that encourage ${goal} on posts about "${topic}". No generic phrases. Make each feel urgent, specific, deeply relevant. Number each one.`;
+}
+return null;
+}
+// Copy prompt for pasting into Claude.ai
+function copyForClaude(toolKey) {
+const prompt = buildFullPrompt(toolKey);
+if (!prompt) { showToast('Fill in the topic first'); return; }
+navigator.clipboard.writeText(prompt)
+.then(() => showToast('Prompt copied — paste it into Claude! ✦'))
+.catch(() => showToast('Long-press the prompt to copy'));
+}
+// Run tool via Gemini API (free)
+async function runTool(toolKey) {
+const btn = document.getElementById(`btn-${toolKey}`);
+const genEl = document.getElementById(`gen-${toolKey}`);
+const outEl = document.getElementById(`out-${toolKey}`);
+const actEl = document.getElementById(`act-${toolKey}`);
+const prompt = buildFullPrompt(toolKey);
+if (!prompt) { showToast('Paste some text first'); return; }
+const apiKey = getApiKey();
+if (!apiKey) {
+showToast('Add your free Gemini key first ↑');
+return;
+}
+btn.disabled = true;
+genEl.classList.add('visible');
+outEl.classList.remove('visible');
+actEl.style.display = 'none';
+outEl.textContent = '';
+try {
+const response = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+{
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+contents: [{ parts: [{ text: prompt }] }],
+generationConfig: { maxOutputTokens: 1000, temperature: 0.85 }
+})
+}
+);
+const data = await response.json();
+if (data.error) {
+outEl.textContent = `⚠️ ${data.error.message || 'API error — check your Gemini key'}`;
+outEl.classList.add('visible');
+if (data.error.code === 400 || data.error.code === 401 || data.error.code === 403) setKeyStatus(false);
+return;
+}
+const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+outEl.textContent = text;
+outEl.classList.add('visible');
+actEl.style.display = 'flex';
+// Add small disclaimer below output
+let disclaimer = actEl.nextElementSibling;
+if (!disclaimer || !disclaimer.classList.contains('ai-disclaimer')) {
+disclaimer = document.createElement('div');
+disclaimer.className = 'ai-disclaimer';
+disclaimer.style.cssText = 'margin-top:8px; font-size:10px; color:rgba(255,255,255,0.2); line-height:1.5; padding:0 2px;';
+disclaimer.textContent = '⚠️ AI-generated content. Review with your clinical expertise before publishing. Not a substitute for professional judgement.';
+actEl.parentNode.insertBefore(disclaimer, actEl.nextSibling);
+}
+} catch (err) {
+outEl.textContent = '⚠️ Something went wrong. Please try again.';
+outEl.classList.add('visible');
+} finally {
+btn.disabled = false;
+genEl.classList.remove('visible');
+}
+}
+function copyOutput(outId) {
+const text = document.getElementById(outId).textContent;
+navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => showToast('Select text manually to copy'));
+}
+function useAsQuote(outId) {
+const text = document.getElementById(outId).textContent;
+const firstLine = text.split('\n').find(l => l.trim().length > 10 && !l.match(/^\d+\./)) || text.slice(0, 200);
+document.getElementById('quoteInput').value = firstLine.replace(/^[\d\.\-\*\s]+/, '').trim();
+state.quote = document.getElementById('quoteInput').value;
+renderCard();
+showScreen('quote');
+showToast('Added to Quote Card ✦');
+}
+/* ══════════════════════════════════════
+EBOOK GENERATOR
+══════════════════════════════════════ */
+let ebookType = 'guide';
+let ebookHTML = '';
+function selectEbookType(el, type) {
+document.querySelectorAll('.ebook-type-card').forEach(c => c.classList.remove('active'));
+el.classList.add('active');
+ebookType = type;
+}
+function getEbookThemeCSS(theme) {
+const themes = {
+'Dark Gold ✦': {
+bg: '#080808', text: '#f5f0e8', accent: '#c9a84c', accent2: '#e8c97a',
+heading: '#c9a84c', cover_bg: 'linear-gradient(160deg,#0f0f18 0%,#1a1408 100%)',
+chapter_bg: '#0f0f12', border: 'rgba(201,168,76,0.2)'
+},
+'Midnight Purple': {
+bg: '#0a0812', text: '#f0eeff', accent: '#a67ee8', accent2: '#c4a8ff',
+heading: '#a67ee8', cover_bg: 'linear-gradient(160deg,#0a0812 0%,#1a0f2e 100%)',
+chapter_bg: '#0f0c18', border: 'rgba(166,126,232,0.2)'
+},
+'Warm Cream': {
+bg: '#faf7f2', text: '#1a1a1a', accent: '#8b5e3c', accent2: '#c9925a',
+heading: '#5c3d1e', cover_bg: 'linear-gradient(160deg,#f5ede0 0%,#e8d5bc 100%)',
+chapter_bg: '#f0ebe3', border: 'rgba(139,94,60,0.15)'
+},
+'All Black': {
+bg: '#000000', text: '#ffffff', accent: '#ffffff', accent2: '#cccccc',
+heading: '#ffffff', cover_bg: 'linear-gradient(160deg,#000 0%,#111 100%)',
+chapter_bg: '#0a0a0a', border: 'rgba(255,255,255,0.1)'
+}
+};
+const themeEl = document.querySelector('#screen-ebook .chip-grid .chip.active');
+const themeName = themeEl ? themeEl.textContent.trim() : 'Dark Gold ✦';
+return themes[themeName] || themes['Dark Gold ✦'];
+}
+async function generateEbook() {
+const title = document.getElementById('ebookTitle').value.trim();
+const audience = document.getElementById('ebookAudience').value.trim();
+const transformation = document.getElementById('ebookTransformation').value.trim();
+const author = document.getElementById('ebookAuthor').value.trim() || '@aphrodyte3';
+const price = document.getElementById('ebookPrice').value.trim() || '9.99';
+if (!title) { showToast('Add a title first'); return; }
+const chaptersEl = document.querySelector('#screen-ebook .chip-grid .chip.active');
+const chapters = chaptersEl ? chaptersEl.textContent.trim() : '7';
+const apiKey = getApiKey();
+if (!apiKey) { showToast('Add your Gemini key in the AI PA tab first'); return; }
+const btn = document.getElementById('btnGenerateEbook');
+const progress = document.getElementById('ebookProgress');
+const progressText = document.getElementById('ebookProgressText');
+const previewWrap = document.getElementById('ebookPreviewWrap');
+const downloadRow = document.getElementById('ebookDownloadRow');
+btn.disabled = true;
+progress.classList.add('visible');
+previewWrap.style.display = 'none';
+downloadRow.style.display = 'none';
+const niches = getActiveNiches() || 'mental health, emotional wellness, relationships';
+const typeLabels = { guide: 'how-to guide', workbook: 'workbook with exercises', checklist: 'toolkit/checklist', manifesto: 'manifesto' };
+const typeLabel = typeLabels[ebookType] || 'guide';
+progressText.textContent = 'Writing your ebook content…';
+const prompt = `You are writing a complete, sellable ${typeLabel} ebook for @aphrodyte3 — a mental health professional and TikTok creator with 15+ years experience in ${niches}.
+EBOOK DETAILS:
+- Title: "${title}"
+- Target audience: ${audience || 'people healing from emotional wounds'}
+- Core transformation: ${transformation || 'understand themselves and break unhealthy patterns'}
+- Number of chapters: ${chapters}
+- Type: ${typeLabel}
+Write the COMPLETE ebook content. For each chapter include:
+1. A compelling chapter title
+2. An opening hook (1-2 powerful sentences)
+3. The main content (3-5 substantial paragraphs with real clinical insight, practical tools, and cycle-breaking language)
+${ebookType === 'workbook' ? '4. 2-3 reflection prompts or exercises' : ''}
+${ebookType === 'checklist' ? '4. A checklist of 5-8 actionable items' : ''}
+Tone: Clinical but deeply human. Direct. No fluff. Every paragraph should feel like it was written by someone who truly understands the reader's pain.
+Format your response as JSON like this:
+{
+"subtitle": "a powerful subtitle",
+"introduction": "2-3 paragraph introduction",
+"chapters": [
+{
+"number": 1,
+"title": "Chapter Title",
+"hook": "Opening hook sentence",
+"content": "Full chapter content...",
+"exercise": "Optional exercise or checklist items"
+}
+],
+"conclusion": "Powerful closing paragraph",
+"callToAction": "Follow @aphrodyte3 on TikTok for more"
+}
+Return ONLY the JSON, no other text.`;
+try {
+const response = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+{
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+contents: [{ parts: [{ text: prompt }] }],
+generationConfig: { maxOutputTokens: 8000, temperature: 0.8 }
+})
+}
+);
+const data = await response.json();
+if (data.error) {
+showToast(`API error: ${data.error.message}`);
+btn.disabled = false;
+progress.classList.remove('visible');
+return;
+}
+let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+raw = raw.replace(/```json|```/g, '').trim();
+let ebookData;
+try { ebookData = JSON.parse(raw); }
+catch(e) {
+ebookData = { subtitle: '', introduction: raw.slice(0, 500), chapters: [], conclusion: '', callToAction: 'Follow @aphrodyte3 on TikTok' };
+}
+// ── FACT-CHECK PASS ──
+progressText.textContent = '🔍 Fact-checking content…';
+const factCheckPrompt = `You are a clinical fact-checker reviewing an ebook about mental health and emotional wellness for a qualified mental health professional with 15+ years experience.
+Review the following ebook content and identify:
+1. Any claims that are factually incorrect or contradict established clinical frameworks (DSM-5, ICD-11, attachment theory, schema therapy, Jungian psychology)
+2. Any statistics or specific claims that are unverifiable or potentially outdated
+3. Any advice that could be harmful or irresponsible if followed without professional supervision
+4. Any content that makes promises that cannot be guaranteed
+Return a JSON object:
+{
+"passed": true or false,
+"flags": [
+{
+"severity": "red" or "amber",
+"location": "chapter title or section",
+"issue": "description of the concern",
+"suggestion": "how to fix it"
+}
+],
+"overallAssessment": "brief summary"
+}
+If there are no issues, return { "passed": true, "flags": [], "overallAssessment": "Content is accurate and responsible." }
+CONTENT TO REVIEW:
+${JSON.stringify(ebookData).slice(0, 4000)}
+Return ONLY the JSON.`;
+const factCheckResponse = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+{
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+contents: [{ parts: [{ text: factCheckPrompt }] }],
+generationConfig: { maxOutputTokens: 1500, temperature: 0.1 }
+})
+}
+);
+const fcData = await factCheckResponse.json();
+let factCheckResult = { passed: true, flags: [], overallAssessment: 'Content reviewed.' };
+try {
+let fcRaw = fcData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+fcRaw = fcRaw.replace(/```json|```/g, '').trim();
+factCheckResult = JSON.parse(fcRaw);
+} catch(e) {}
+// Show flags if any
+if (factCheckResult.flags && factCheckResult.flags.length > 0) {
+const redFlags = factCheckResult.flags.filter(f => f.severity === 'red');
+const amberFlags = factCheckResult.flags.filter(f => f.severity === 'amber');
+let flagMsg = '';
+if (redFlags.length > 0) {
+flagMsg = `⛔ ${redFlags.length} issue(s) need your review before publishing. Check the flag report below.`;
+} else if (amberFlags.length > 0) {
+flagMsg = `⚠️ ${amberFlags.length} item(s) flagged for your review. Use your clinical judgement.`;
+}
+if (flagMsg) {
+// Show flags panel
+showFactCheckFlags(factCheckResult.flags, factCheckResult.overallAssessment);
+}
+}
+progressText.textContent = 'Building your branded PDF…';
+const theme = getEbookThemeCSS();
+ebookHTML = buildEbookHTML(title, author, price, ebookData, theme, factCheckResult);
+const iframe = document.getElementById('ebookPreviewFrame');
+iframe.srcdoc = ebookHTML;
+iframe.style.height = '500px';
+previewWrap.style.display = 'block';
+downloadRow.style.display = 'block';
+progress.classList.remove('visible');
+btn.disabled = false;
+if (factCheckResult.flags && factCheckResult.flags.length > 0) {
+showToast('Ebook ready — review flags before publishing ⚠️');
+} else {
+showToast('Ebook ready — fact-check passed ✦');
+}
+} catch(err) {
+showToast('Something went wrong — try again');
+btn.disabled = false;
+progress.classList.remove('visible');
+}
+}
+function showFactCheckFlags(flags, assessment) {
+// Remove existing flag panel if any
+const existing = document.getElementById('factCheckPanel');
+if (existing) existing.remove();
+const panel = document.createElement('div');
+panel.id = 'factCheckPanel';
+panel.style.cssText = `margin-bottom:14px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,180,0,0.3);`;
+const redFlags = flags.filter(f => f.severity === 'red');
+const amberFlags = flags.filter(f => f.severity === 'amber');
+const headerColor = redFlags.length > 0 ? 'rgba(255,80,80,0.12)' : 'rgba(255,180,0,0.1)';
+const headerBorder = redFlags.length > 0 ? 'rgba(255,80,80,0.3)' : 'rgba(255,180,0,0.3)';
+const icon = redFlags.length > 0 ? '⛔' : '⚠️';
+panel.innerHTML = `
+<div style="padding:14px 16px; background:${headerColor}; border-bottom:1px solid ${headerBorder};">
+<div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">${icon} Fact-Check Report</div>
+<div style="font-size:11px; color:rgba(255,255,255,0.6);">${assessment}</div>
+</div>
+${flags.map(f => `
+<div style="padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); background:rgba(0,0,0,0.2);">
+<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+<span style="font-size:10px; padding:2px 8px; border-radius:10px; background:${f.severity==='red'?'rgba(255,80,80,0.2)':'rgba(255,180,0,0.2)'}; color:${f.severity==='red'?'#ff8080':'#ffcc44'}; font-weight:600; text-transform:uppercase;">${f.severity}</span>
+<span style="font-size:11px; color:rgba(255,255,255,0.5);">${f.location || ''}</span>
+</div>
+<div style="font-size:12px; color:rgba(255,255,255,0.8); margin-bottom:4px;">${f.issue}</div>
+<div style="font-size:11px; color:rgba(255,255,255,0.45);">💡 ${f.suggestion}</div>
+</div>
+`).join('')}
+<div style="padding:10px 16px; background:rgba(0,0,0,0.15); font-size:11px; color:rgba(255,255,255,0.4); line-height:1.5;">
+Your clinical expertise is the final authority. Review flagged items before publishing.
+</div>
+`;
+const generateSection = document.querySelector('#screen-ebook .panel:last-of-type');
+generateSection.parentNode.insertBefore(panel, generateSection);
+panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function buildEbookHTML(title, author, price, data, t, factCheck) {
+const today = new Date().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
+const hasRedFlags = factCheck && factCheck.flags && factCheck.flags.some(f => f.severity === 'red');
+const flagWarning = hasRedFlags ? `
+<div style="background:#ff4444; color:#fff; padding:16px 32px; font-family:Arial,sans-serif; font-size:13px; text-align:center; font-weight:700;">
+⛔ DRAFT ONLY — Fact-check flags require your review before publishing. See your Creator Studio for details.
+</div>
+` : '';
+const legalPage = `
+<div style="padding:60px 48px; background:${t.chapter_bg}; border-top:1px solid ${t.border}; page-break-before:always;">
+<h2 style="font-family:'Georgia',serif; font-size:18px; color:${t.heading}; margin-bottom:24px; letter-spacing:.05em;">Important Notice</h2>
+<div style="font-size:12px; line-height:1.9; color:${t.text}; opacity:.65;">
+<p style="margin-bottom:12px;"><strong style="opacity:1; color:${t.text};">Educational Purpose Only.</strong> This ebook is provided for educational and informational purposes only. The content is not intended to be a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a qualified mental health professional, physician, or other qualified health provider with any questions you may have regarding a mental health condition.</p>
+<p style="margin-bottom:12px;"><strong style="opacity:1; color:${t.text};">Not Clinical Advice.</strong> Reading this ebook does not create a therapist-client, counsellor-client, or any other professional relationship between you and the author. The information presented reflects the author's personal views, experiences, and understanding of psychological concepts and is not a substitute for individualised clinical care.</p>
+<p style="margin-bottom:12px;"><strong style="opacity:1; color:${t.text};">No Guarantees.</strong> While every effort has been made to ensure the accuracy of information presented, mental health research evolves continuously. The author makes no representations or warranties regarding the completeness, accuracy, or suitability of the information for your particular situation.</p>
+<p style="margin-bottom:12px;"><strong style="opacity:1; color:${t.text};">Crisis Support.</strong> If you are experiencing a mental health crisis, suicidal thoughts, or feel you may harm yourself or others, please contact emergency services (999 in the UK) or a crisis line immediately. This ebook is not an emergency resource.</p>
+<p style="margin-bottom:12px;"><strong style="opacity:1; color:${t.text};">Copyright.</strong> © ${new Date().getFullYear()} ${author}. All rights reserved. This ebook may not be reproduced, distributed, or transmitted in any form without prior written permission from the author. Unauthorised sharing or reselling is prohibited.</p>
+<p style="margin-bottom:12px;"><strong style="opacity:1; color:${t.text};">UK Consumer Rights.</strong> This digital product is delivered immediately upon purchase. By purchasing, you acknowledge you have read and agree to these terms. Under UK Consumer Contracts Regulations 2013, your right to cancel may not apply once digital content has been accessed.</p>
+<p style="margin-bottom:0; opacity:.5; font-size:11px;">Published: ${today} · ${author} · For support: contact via TikTok @aphrodyte3</p>
+</div>
+</div>`;
+const chaptersHTML = (data.chapters || []).map((ch, i) => `
+<div class="chapter" style="page-break-before: always;">
+<div class="chapter-num" style="color:${t.accent}; font-family:'Georgia',serif; font-size:13px; letter-spacing:.2em; text-transform:uppercase; margin-bottom:8px; opacity:.7;">Chapter ${ch.number || i+1}</div>
+<h2 style="color:${t.heading}; font-family:'Georgia',serif; font-size:26px; line-height:1.2; margin-bottom:16px; font-weight:700;">${ch.title || ''}</h2>
+${ch.hook ? `<p style="font-style:italic; color:${t.accent}; font-size:16px; line-height:1.6; margin-bottom:20px; padding-left:16px; border-left:3px solid ${t.accent};">${ch.hook}</p>` : ''}
+<div style="font-size:15px; line-height:1.85; color:${t.text}; opacity:.9;">
+${(ch.content || '').split('\n').filter(p => p.trim()).map(p => `<p style="margin-bottom:16px;">${p}</p>`).join('')}
+</div>
+${ch.exercise ? `
+<div style="margin-top:24px; padding:20px; background:${t.border.replace('0.2','0.08')}; border:1px solid ${t.border}; border-radius:10px;">
+<div style="font-family:'Georgia',serif; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:${t.accent}; margin-bottom:12px;">${ebookType === 'workbook' ? '✍️ Reflection' : '✅ Action Steps'}</div>
+<div style="font-size:14px; line-height:1.8; color:${t.text};">${ch.exercise}</div>
+</div>
+` : ''}
+</div>
+`).join('');
+return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:${t.bg}; color:${t.text}; font-family:'Georgia',serif; }
+@media print {
+.cover { height:100vh; }
+.chapter { padding: 60px 64px; }
+}
+</style>
+</head>
+<body>
+${flagWarning}
+<div class="cover" style="background:${t.cover_bg}; min-height:600px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:60px 40px; position:relative;">
+<div style="position:absolute; top:0; left:0; right:0; bottom:0; background: radial-gradient(ellipse at 30% 20%, rgba(201,168,76,0.08) 0%, transparent 60%); pointer-events:none;"></div>
+<div style="font-family:'Georgia',serif; font-size:11px; letter-spacing:.35em; text-transform:uppercase; color:${t.accent}; margin-bottom:32px; opacity:.8;">@aphrodyte3 presents</div>
+<h1 style="font-family:'Georgia',serif; font-size:36px; font-weight:700; line-height:1.15; color:${t.text}; margin-bottom:16px; max-width:480px;">${title}</h1>
+${data.subtitle ? `<div style="font-size:16px; color:${t.accent}; font-style:italic; margin-bottom:40px; opacity:.9; max-width:400px; line-height:1.5;">${data.subtitle}</div>` : '<div style="margin-bottom:40px;"></div>'}
+<div style="width:60px; height:1px; background:${t.accent}; margin: 0 auto 40px; opacity:.5;"></div>
+<div style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:${t.text}; opacity:.6;">${author}</div>
+<div style="position:absolute; bottom:32px; right:32px; background:rgba(201,168,76,0.15); border:1px solid ${t.border}; border-radius:20px; padding:6px 16px; font-size:12px; color:${t.accent}; letter-spacing:.1em;">£${price}</div>
+</div>
+${legalPage}
+<div style="padding:60px 48px; background:${t.chapter_bg}; page-break-before:always;">
+<h2 style="font-family:'Georgia',serif; font-size:22px; color:${t.heading}; margin-bottom:24px; letter-spacing:.05em;">Introduction</h2>
+<div style="font-size:15px; line-height:1.85; color:${t.text}; opacity:.88;">
+${(data.introduction || '').split('\n').filter(p => p.trim()).map(p => `<p style="margin-bottom:16px;">${p}</p>`).join('')}
+</div>
+</div>
+${chaptersHTML.replace(/<div class="chapter"/g, `<div class="chapter" style="padding:60px 48px; background:${t.bg}; border-top:1px solid ${t.border};"`)}
+<div style="padding:60px 48px; background:${t.chapter_bg}; border-top:1px solid ${t.border}; page-break-before:always;">
+<h2 style="font-family:'Georgia',serif; font-size:22px; color:${t.heading}; margin-bottom:24px;">Final Words</h2>
+<div style="font-size:15px; line-height:1.85; color:${t.text}; opacity:.88;">
+${(data.conclusion || '').split('\n').filter(p => p.trim()).map(p => `<p style="margin-bottom:16px;">${p}</p>`).join('')}
+</div>
+<div style="margin-top:40px; padding:24px; background:rgba(201,168,76,0.06); border:1px solid ${t.border}; border-radius:12px; text-align:center;">
+<div style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:${t.accent}; margin-bottom:8px;">Continue the journey</div>
+<div style="font-size:15px; color:${t.text}; opacity:.8;">${data.callToAction || 'Follow @aphrodyte3 on TikTok for more'}</div>
+</div>
+</div>
+<div style="padding:24px 48px; background:${t.bg}; border-top:1px solid ${t.border};">
+<p style="font-size:10px; color:${t.text}; opacity:.3; line-height:1.7; text-align:center;">
+This ebook is for educational purposes only and does not constitute professional mental health advice. The author is not liable for any actions taken based on the content of this publication. If you are in crisis, contact emergency services or a qualified mental health professional immediately. © ${new Date().getFullYear()} ${author}. All rights reserved.
+</p>
+</div>
+</body>
+</html>`;
+}
+function downloadEbook() {
+if (!ebookHTML) { showToast('Generate the ebook first'); return; }
+const title = document.getElementById('ebookTitle').value.trim() || 'ebook';
+const win = window.open('', '_blank');
+win.document.write(ebookHTML);
+win.document.close();
+setTimeout(() => {
+win.print();
+showToast('Use "Save as PDF" in the print dialog ✦');
+}, 800);
+}
+/* ── INIT ── */
+buildUI();
+loadApiKey();
+// Register service worker for PWA installability
+if ('serviceWorker' in navigator) {
+const swCode = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => clients.claim());
+self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+`;
+const blob = new Blob([swCode], {type: 'application/javascript'});
+const swUrl = URL.createObjectURL(blob);
+navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+</body>
+</html>
